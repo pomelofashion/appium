@@ -218,6 +218,7 @@ class AppiumDriver extends DriverCore {
    * @param {DriverData[]} [driverData]
    */
   async createSession(jsonwpCaps, reqCaps, w3cCapabilities, driverData) {
+    w3cCapabilities = w3cCapabilities || jsonwpCaps;
     const defaultCapabilities = _.cloneDeep(this.args.defaultCapabilities);
     const defaultSettings = pullSettings(defaultCapabilities);
     jsonwpCaps = _.cloneDeep(jsonwpCaps);
