@@ -3,6 +3,67 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [2.0.0-beta.57](https://github.com/appium/appium/compare/appium@2.0.0-beta.56...appium@2.0.0-beta.57) (2023-03-08)
+
+
+### Bug Fixes
+
+* **appium,fake-driver:** expose child process when running an extension script ([e9dae3f](https://github.com/appium/appium/commit/e9dae3f6d006dcf89b6c0b6fb491be15acfed98b))
+* **appium,support:** fs.readPackageJsonFrom() returns proper type ([9ccbab5](https://github.com/appium/appium/commit/9ccbab5dc02d0019b0cad903772cda872d9fd5fb))
+* **docutils:** update dependency lilconfig to v2.1.0 ([4ed745a](https://github.com/appium/appium/commit/4ed745a95ffc6a43f76003eba62019c16a4c6cf2))
+* **execute-driver-plugin:** update dependency webdriverio to v7.30.2 ([49694f5](https://github.com/appium/appium/commit/49694f50a4680138cc92aba1eee294c927d712cf))
+* **types:** update dependency type-fest to v3.6.1 ([471a4b5](https://github.com/appium/appium/commit/471a4b57e622ff077d59f577a78341268700c48d))
+
+
+
+
+
+# [2.0.0-beta.56](https://github.com/appium/appium/compare/appium@2.0.0-beta.55...appium@2.0.0-beta.56) (2023-02-24)
+
+
+### Bug Fixes
+
+* appium:options should work via --default-capabilities ([11e7ad0](https://github.com/appium/appium/commit/11e7ad0cd403ab1dc100f581cdf93772e3449db3)), closes [#18191](https://github.com/appium/appium/issues/18191)
+* **execute-driver-plugin:** update dependency webdriverio to v7.30.1 ([547b8a4](https://github.com/appium/appium/commit/547b8a45c4b5629720b0f4bdb0485a861aecbebf))
+* **support:** update dependency axios to v1.3.4 ([49f157d](https://github.com/appium/appium/commit/49f157d63e3bdbd205527a5dc8f997df68540546))
+* **types:** update dependency type-fest to v3.5.7 ([b4416c5](https://github.com/appium/appium/commit/b4416c5c0f40200b36909a1fbb492d8c4a212108))
+* **types:** update dependency type-fest to v3.6.0 ([08a6f3a](https://github.com/appium/appium/commit/08a6f3a308c7ee162e992629888557b31e50a26e))
+* update axios to v1.3.3 ([8f9de63](https://github.com/appium/appium/commit/8f9de63e4a622712db545ab63f9f4ce6654e4a91))
+
+
+
+
+
+# [2.0.0-beta.55](https://github.com/appium/appium/compare/appium@2.0.0-beta.54...appium@2.0.0-beta.55) (2023-02-09)
+
+
+### Bug Fixes
+
+* **docutils:** fix bad option name and ignore most falsy args ([5446e5c](https://github.com/appium/appium/commit/5446e5c7a755be081f46f1ed1ca8c13665d9a772))
+
+
+
+
+
+# [2.0.0-beta.54](https://github.com/appium/appium/compare/appium@2.0.0-beta.53...appium@2.0.0-beta.54) (2023-02-09)
+
+
+### Bug Fixes
+
+* add missing ' in an error message ([#18105](https://github.com/appium/appium/issues/18105)) ([0f95213](https://github.com/appium/appium/commit/0f952133987a5da176442eff22d5981ed8959fbe))
+* **appium:** fix broken autoinstall script ([2b3e576](https://github.com/appium/appium/commit/2b3e576393e2dd6a33172632f1e009853e83a8e2))
+* **appium:** update dependency package-changed to v2 ([0d7390f](https://github.com/appium/appium/commit/0d7390faa4df51f67eed74d8539c34a8a67f7ed0))
+* **execute-driver-plugin:** update dependency webdriverio to v7.30.0 ([444b988](https://github.com/appium/appium/commit/444b9886a2ef76f16a477ed2e1f6d3eadd542da3))
+* **support:** update dependency axios to v1.2.3 ([20c176b](https://github.com/appium/appium/commit/20c176bae7d0a4f928082fe1a9237f995b8bd58e))
+* **typedoc-plugin-appium:** use simple filenames for ExtensionReflection objects ([6c26b97](https://github.com/appium/appium/commit/6c26b971246de09ce07b85a34122273f4fad3125)), closes [#18110](https://github.com/appium/appium/issues/18110)
+* **types:** update dependency type-fest to v3.5.4 ([cfb5297](https://github.com/appium/appium/commit/cfb529772cff3a2b7e9ff36e12444b603906a769))
+* **types:** update dependency type-fest to v3.5.5 ([9bf320c](https://github.com/appium/appium/commit/9bf320c87ccf574f933a8247a851b4f848c39fa1))
+* **types:** update dependency type-fest to v3.5.6 ([775c990](https://github.com/appium/appium/commit/775c990f9d4176e78936a071968a788e19048519))
+
+
+
+
+
 # [2.0.0-beta.53](https://github.com/appium/appium/compare/appium@2.0.0-beta.52...appium@2.0.0-beta.53) (2023-01-23)
 
 

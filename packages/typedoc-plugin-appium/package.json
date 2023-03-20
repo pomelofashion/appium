@@ -1,6 +1,6 @@
 {
   "name": "@appium/typedoc-plugin-appium",
-  "version": "0.3.4",
+  "version": "0.5.1",
   "description": "TypeDoc plugin for Appium & its extensions",
   "homepage": "https://appium.io",
   "license": "Apache-2.0",
@@ -24,9 +24,9 @@
   "types": "./build/lib/index.d.ts",
   "scripts": {
     "build": "cpy lib/theme/resources build",
-    "clean": "npx rimraf build/lib/theme/resources",
+    "clean": "npx rimraf build",
     "test": "run-s test:unit",
-    "test:e2e": "mocha --timeout 20s \"test/e2e/**/*.e2e.spec.ts\"",
+    "test:e2e": "mocha --timeout 20s \"test/e2e/index.e2e.spec.ts\" && mocha --timeout 20s \"test/e2e/converter/builtin-external-driver.e2e.spec.ts\" && mocha --timeout 20s \"test/e2e/converter/builtin-method-map.e2e.spec.ts\" && mocha --timeout 20s \"test/e2e/converter/converter.e2e.spec.ts\" && mocha --timeout 20s \"test/e2e/converter/external.e2e.spec.ts\"",
     "test:smoke": "node ./index.js",
     "test:unit": "mocha --timeout 2s \"test/unit/**/*.spec.ts\""
   },
@@ -57,13 +57,13 @@
     "typedoc": "^0.23.14",
     "typedoc-plugin-markdown": "^3.14.0",
     "typedoc-plugin-resolve-crossmodule-references": "~0.3.3",
-    "typescript": "~4.7.0"
+    "typescript": "^4.7.0"
   },
   "dependencies": {
     "handlebars": "4.7.7",
     "lodash": "4.17.21",
     "pluralize": "8.0.0",
-    "type-fest": "3.5.6"
+    "type-fest": "3.6.1"
   },
   "gitHead": "84b211330dc84849af9cc1f3a5c5ad32e15b2e72"
 }

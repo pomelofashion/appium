@@ -5,13 +5,14 @@
  * @module
  */
 
+import {spawn, SpawnOptions} from 'node:child_process';
 import path from 'node:path';
-import {exec, SubProcess, TeenProcessExecOptions} from 'teen_process';
-import {NAME_BIN, NAME_MKDOCS, NAME_MKDOCS_YML} from '../constants';
+import {exec, TeenProcessExecOptions} from 'teen_process';
+import {NAME_BIN, NAME_MKDOCS, NAME_MKDOCS_YML, NAME_THEME} from '../constants';
 import {DocutilsError} from '../error';
 import {findMkDocsYml, readMkDocsYml, whichMkDocs} from '../fs';
 import logger from '../logger';
-import {relative, stopwatch, TeenProcessSubprocessStartOpts} from '../util';
+import {relative, spawnBackgroundProcess, SpawnBackgroundProcessOpts, stopwatch} from '../util';
 
 const log = logger.withTag('mkdocs');
 
@@ -23,14 +24,14 @@ const log = logger.withTag('mkdocs');
  */
 async function doServe(
   args: string[] = [],
-  {startDetector, detach, timeoutMs}: TeenProcessSubprocessStartOpts = {},
+  opts: SpawnBackgroundProcessOpts = {},
   mkDocsPath?: string
 ) {
   mkDocsPath = mkDocsPath ?? (await whichMkDocs());
   const finalArgs = ['serve', ...args];
-  log.debug('Launching %s with args: %O', mkDocsPath, finalArgs);
-  const proc = new SubProcess(mkDocsPath, finalArgs);
-  return await proc.start(startDetector, detach, timeoutMs);
+
+  log.debug('Launching %s with args: %s', mkDocsPath, finalArgs);
+  return spawnBackgroundProcess(mkDocsPath, finalArgs, opts);
 }
 
 /**
@@ -57,7 +58,7 @@ async function doBuild(
 export async function buildSite({
   mkdocsYml: mkDocsYmlPath,
   siteDir,
-  theme = NAME_MKDOCS,
+  theme = NAME_THEME,
   cwd = process.cwd(),
   serve = false,
   serveOpts,
@@ -137,7 +138,7 @@ export interface BuildMkDocsOpts {
   execOpts?: TeenProcessExecOptions;
 
   /**
-   * Extra options for {@linkcode teen_process.Subprocess.start}
+   * Extra options for {@linkcode spawnBackgroundProcess}
    */
-  serveOpts?: TeenProcessSubprocessStartOpts;
+  serveOpts?: SpawnBackgroundProcessOpts;
 }

@@ -1,15 +1,14 @@
 /**
- * Validates an environment for building documentation
+ * Validates an environment for building documentation; used by `validate` command
  *
  * @module
  */
 
-import {fs} from '@appium/support';
+import {fs, util} from '@appium/support';
 import chalk from 'chalk';
 import _ from 'lodash';
 import {EventEmitter} from 'node:events';
 import path from 'node:path';
-import pluralize from 'pluralize';
 import {satisfies} from 'semver';
 import {exec} from 'teen_process';
 import {
@@ -36,7 +35,6 @@ import {
   findMkDocsYml,
   readJson5,
   readTypedocJson,
-  readYaml,
   whichMkDocs,
   whichNpm,
   whichPython,
@@ -287,7 +285,7 @@ export class DocutilsValidator extends EventEmitter {
       return this.requirementsTxt;
     }
 
-    let requiredPackages: PipPackage[] = [];
+    const requiredPackages: PipPackage[] = [];
 
     try {
       let requirementsTxt = await fs.readFile(REQUIREMENTS_TXT_PATH, 'utf8');
@@ -312,6 +310,9 @@ export class DocutilsValidator extends EventEmitter {
     this.emittedErrors.clear();
   }
 
+  /**
+   * Validates that the correct version of `mkdocs` is installed
+   */
   protected async validateMkDocs() {
     let mkDocsPath: string | undefined;
     try {
@@ -466,7 +467,7 @@ export class DocutilsValidator extends EventEmitter {
     const msgParts = [];
     if (missingPackages.length) {
       msgParts.push(
-        `The following required ${pluralize(
+        `The following required ${util.pluralize(
           'package',
           missingPackages.length
         )} could not be found:\n${missingPackages
@@ -476,7 +477,7 @@ export class DocutilsValidator extends EventEmitter {
     }
     if (invalidVersionPackages.length) {
       msgParts.push(
-        `The following required ${pluralize(
+        `The following required ${util.pluralize(
           'package',
           invalidVersionPackages.length
         )} are installed, but at the wrong version:\n${invalidVersionPackages
@@ -533,7 +534,7 @@ export class DocutilsValidator extends EventEmitter {
     }
 
     if (rawTypeDocVersion) {
-      let match = rawTypeDocVersion.match(TYPEDOC_VERSION_REGEX);
+      const match = rawTypeDocVersion.match(TYPEDOC_VERSION_REGEX);
       if (match) {
         typeDocVersion = match[1];
       } else {
@@ -621,7 +622,7 @@ export class DocutilsValidator extends EventEmitter {
       return this.fail(`Could not find TypeScript compiler ("tsc") from ${pkgDir}`);
     }
 
-    let match = rawTypeScriptVersion.match(TYPESCRIPT_VERSION_REGEX);
+    const match = rawTypeScriptVersion.match(TYPESCRIPT_VERSION_REGEX);
     if (match) {
       typeScriptVersion = match[1];
     } else {

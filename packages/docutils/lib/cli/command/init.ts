@@ -1,19 +1,32 @@
+/**
+ * Yargs command module for the `init` command.
+ * @module
+ */
+
 import _ from 'lodash';
-import {CommandModule, InferredOptionTypes, Options} from 'yargs';
+import type {CommandModule, InferredOptionTypes, Options} from 'yargs';
 import {init} from '../../init';
 import logger from '../../logger';
 import {stopwatch} from '../../util';
+import {checkMissingPaths} from '../check';
 
 const log = logger.withTag('init');
 
-const NAME_GROUP_INIT_MKDOCS = 'MkDocs Config:';
-const NAME_GROUP_INIT_PATHS = 'Paths:';
-const NAME_GROUP_INIT_BEHAVIOR = 'Initialization Behavior:';
+enum InitCommandGroup {
+  MkDocs = 'MkDocs Config:',
+  Paths = 'Custom Paths:',
+  Behavior = 'Initialization Behavior:',
+}
 
+/**
+ * Note the groups here; _some_ opts are paths and would usually be checked via
+ * {@linkcode checkMissingPaths}, but in this case we do not care if the path exists or not, because
+ * we may create it.
+ */
 const opts = {
   copyright: {
     description: 'Copyright notice',
-    group: NAME_GROUP_INIT_MKDOCS,
+    group: InitCommandGroup.MkDocs,
     nargs: 1,
     requiresArg: true,
     type: 'string',
@@ -22,19 +35,19 @@ const opts = {
     default: '.',
     defaultDescription: '(current directory)',
     description: 'Directory of package',
-    group: NAME_GROUP_INIT_PATHS,
+    group: InitCommandGroup.Paths,
     normalize: true,
     type: 'string',
   },
   'dry-run': {
     describe: 'Do not write any files; show what would be done',
-    group: NAME_GROUP_INIT_BEHAVIOR,
+    group: InitCommandGroup.Behavior,
     type: 'boolean',
   },
   force: {
     alias: 'f',
     describe: 'Overwrite existing configurations',
-    group: NAME_GROUP_INIT_BEHAVIOR,
+    group: InitCommandGroup.Behavior,
     type: 'boolean',
   },
   include: {
@@ -43,19 +56,20 @@ const opts = {
     coerce: (value: string | string[]) => _.castArray(value),
     description: 'Files to include in compilation (globs OK)',
     nargs: 1,
+    group: InitCommandGroup.MkDocs,
     requiresArg: true,
     type: 'string',
   },
   mkdocs: {
     default: true,
     description: 'Create mkdocs.yml if needed',
-    group: NAME_GROUP_INIT_BEHAVIOR,
+    group: InitCommandGroup.Behavior,
     type: 'boolean',
   },
   'mkdocs-yml': {
     defaultDescription: './mkdocs.yml',
-    description: 'Path to mkdocs.yml',
-    group: NAME_GROUP_INIT_PATHS,
+    description: 'Path to new or existing mkdocs.yml',
+    group: InitCommandGroup.MkDocs,
     nargs: 1,
     normalize: true,
     requiresArg: true,
@@ -63,8 +77,8 @@ const opts = {
   },
   'package-json': {
     defaultDescription: './package.json',
-    describe: 'Path to package.json',
-    group: NAME_GROUP_INIT_PATHS,
+    describe: 'Path to existing package.json',
+    group: InitCommandGroup.Paths,
     nargs: 1,
     normalize: true,
     requiresArg: true,
@@ -73,13 +87,13 @@ const opts = {
   python: {
     default: true,
     description: 'Install Python dependencies if needed',
-    group: NAME_GROUP_INIT_BEHAVIOR,
+    group: InitCommandGroup.Behavior,
     type: 'boolean',
   },
   'python-path': {
     defaultDescription: '(derived from shell)',
     description: 'Path to python 3 executable',
-    group: NAME_GROUP_INIT_PATHS,
+    group: InitCommandGroup.Paths,
     nargs: 1,
     normalize: true,
     requiresArg: true,
@@ -88,7 +102,7 @@ const opts = {
   'repo-name': {
     defaultDescription: '(derived from --repo-url)',
     description: 'Name of extension repository',
-    group: NAME_GROUP_INIT_MKDOCS,
+    group: InitCommandGroup.MkDocs,
     nargs: 1,
     requiresArg: true,
     type: 'string',
@@ -96,7 +110,7 @@ const opts = {
   'repo-url': {
     defaultDescription: '(from package.json)',
     description: 'URL of extension repository',
-    group: NAME_GROUP_INIT_MKDOCS,
+    group: InitCommandGroup.MkDocs,
     nargs: 1,
     requiresArg: true,
     type: 'string',
@@ -104,7 +118,7 @@ const opts = {
   'site-description': {
     defaultDescription: '(from package.json)',
     description: 'Site description',
-    group: NAME_GROUP_INIT_MKDOCS,
+    group: InitCommandGroup.MkDocs,
     nargs: 1,
     requiresArg: true,
     type: 'string',
@@ -112,15 +126,15 @@ const opts = {
   'site-name': {
     defaultDescription: '(extension package name)',
     description: 'Name of site',
-    group: NAME_GROUP_INIT_MKDOCS,
+    group: InitCommandGroup.MkDocs,
     nargs: 1,
     requiresArg: true,
     type: 'string',
   },
   'tsconfig-json': {
     defaultDescription: './tsconfig.json',
-    describe: 'Path to tsconfig.json',
-    group: NAME_GROUP_INIT_PATHS,
+    describe: 'Path to new or existing tsconfig.json',
+    group: InitCommandGroup.Behavior,
     nargs: 1,
     normalize: true,
     requiresArg: true,
@@ -129,13 +143,13 @@ const opts = {
   typedoc: {
     default: true,
     description: 'Create typedoc.json if needed',
-    group: NAME_GROUP_INIT_BEHAVIOR,
+    group: InitCommandGroup.Behavior,
     type: 'boolean',
   },
   'typedoc-json': {
     defaultDescription: './typedoc.json',
-    describe: 'Path to typedoc.json',
-    group: NAME_GROUP_INIT_PATHS,
+    describe: 'Path to new or existing typedoc.json',
+    group: InitCommandGroup.Behavior,
     nargs: 1,
     normalize: true,
     requiresArg: true,
@@ -144,23 +158,31 @@ const opts = {
   typescript: {
     default: true,
     description: 'Create tsconfig.json if needed',
-    group: NAME_GROUP_INIT_BEHAVIOR,
+    group: InitCommandGroup.Behavior,
     type: 'boolean',
   },
-} as const;
-opts as Record<string, Options>; // type check
+  upgrade: {
+    alias: 'up',
+    describe: 'Only upgrade Python dependencies if out-of-date',
+    group: InitCommandGroup.Behavior,
+    type: 'boolean',
+    conflicts: 'force',
+  },
+} as const satisfies Record<string, Options>;
 
 type InitOptions = InferredOptionTypes<typeof opts>;
 
-const initCommand: CommandModule<{}, InitOptions> = {
+export default {
   command: 'init',
   describe: 'Initialize package for doc generation',
-  builder: opts,
+  builder(yargs) {
+    return yargs
+      .options(opts)
+      .check(async (argv) => checkMissingPaths(opts, InitCommandGroup.Paths, argv));
+  },
   async handler(args) {
     const done = stopwatch('init');
     await init({...args, overwrite: args.force, cwd: args.dir});
     log.success('Done (%dms)', done());
   },
-};
-
-export default initCommand;
+} as CommandModule<object, InitOptions>;

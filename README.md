@@ -12,8 +12,9 @@
 Appium is an open-source, cross-platform test automation tool for native,
 hybrid, mobile web and desktop apps. Initially created to automate iOS and Android mobile
 applications Appium has grown to a full-featured platform that provides [WebDriver](https://www.w3.org/TR/webdriver/)-based automation possibilities for the whole set of different mobile and desktop platforms.
-See [Drivers Maintained By The Appium Team](#drivers-maintained-by-the-appium-team)
-and [Drivers Provided By Third Parties](#drivers-provided-by-third-parties) sections below for more details.
+See the full list of
+[officially-supported](https://appium.github.io/appium/docs/en/latest/ecosystem/#drivers) and
+[third-party](https://appium.github.io/appium/docs/en/latest/ecosystem/#other-drivers) drivers for more details.
 
 :bangbang: Major documentation revision in progress
 
@@ -57,7 +58,7 @@ appium driver install --source=npm appium-xcuitest-driver[@<version>]
 # To install a driver from a local folder (useful for developers)
 appium driver install --source=local /Users/me/sources/appium-xcuitest-driver
 # To install a new driver from github (hm, maybe it's time to publish it to NPM?)
-appium driver install --source=github appium/appium-xcuitest-driver
+appium driver install --source=github --package=appium-xcuitest-driver appium/appium-xcuitest-driver
 
 # To list already installed drivers
 appium driver list --installed
@@ -168,7 +169,7 @@ Java/Kotlin. Appium opens up the possibility of true cross-platform native app
 automation, for mobile and beyond. Finally!
 
 If you're new to Appium or want a more comprehensive description of what this is all
-about, please read our [Introduction to Appium Concepts](/docs/en/about-appium/intro.md).
+about, please read our [Intro to Appium](https://appium.github.io/appium/docs/en/latest/intro/).
 
 ### Quickstart
 
@@ -204,10 +205,7 @@ be sure to sign up!
 
 ### Troubleshooting
 
-We put together a [troubleshooting guide](/docs/en/writing-running-appium/other/troubleshooting.md).
-Please have a look here first if you run into any problems. It contains instructions for checking
-a lot of common errors and how to get in touch with the community if you're
-stumped.
+Please find the troubleshooting guide at the corresponding driver repository/documentation.
 
 ### License
 

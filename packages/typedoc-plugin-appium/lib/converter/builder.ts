@@ -6,13 +6,7 @@
 
 import _ from 'lodash';
 import pluralize from 'pluralize';
-import {
-  ContainerReflection,
-  Context,
-  DeclarationReflection,
-  ProjectReflection,
-  ReflectionKind,
-} from 'typedoc';
+import {ContainerReflection, Context, DeclarationReflection, ProjectReflection} from 'typedoc';
 import {isParentReflection} from '../guards';
 import {AppiumPluginLogger} from '../logger';
 import {
@@ -22,10 +16,10 @@ import {
   ExecMethodData,
   ExtensionReflection,
   ModuleCommands,
-  ParentReflection,
   ProjectCommands,
   Route,
 } from '../model';
+import {PackageTitle} from '../options/declarations';
 import {NAME_BUILTIN_COMMAND_MODULE} from './builtin-method-map';
 import {findChildByNameAndGuard} from './utils';
 
@@ -47,13 +41,12 @@ import {findChildByNameAndGuard} from './utils';
  * @internal
  */
 export function createCommandReflection(
-  log: AppiumPluginLogger,
   ctx: Context,
   data: CommandData | ExecMethodData,
   parent: ExtensionReflection,
   route?: Route
 ): void {
-  const commandRefl = new CommandReflection(data, parent, log, route);
+  const commandRefl = new CommandReflection(data, parent, route);
   // yes, the `undefined`s are needed
   ctx.postReflectionCreation(commandRefl, undefined, undefined);
   ctx.finalizeDeclarationReflection(commandRefl);
@@ -66,7 +59,8 @@ export function createCommandReflection(
  * Note that the return value is mainly for informational purposes, since this method mutates
  * TypeDoc's state.
  * @param log - Logger
- * @param parent - Parent module (or project)
+ * @param ctx - Context
+ * @param name - Name of module containing commands
  * @param moduleCmds - Command information for `module`
  * @internal
  */
@@ -76,8 +70,17 @@ export function createExtensionReflection(
   name: string,
   moduleCmds: ModuleCommands
 ): ExtensionReflection {
+  const packageTitles = ctx.converter.application.options.getValue(
+    'packageTitles'
+  ) as PackageTitle[];
+  log.verbose(`Value of packageTitles: %O`, packageTitles);
   // TODO: parent.name may not be right here
-  const extRefl = new ExtensionReflection(name, ctx.project, moduleCmds);
+  const extRefl = new ExtensionReflection(
+    name,
+    ctx.project,
+    moduleCmds,
+    packageTitles.find((p) => p.name === name)?.title
+  );
   /**
    * See note in {@link createCommandReflection} above about this call
    */
@@ -88,12 +91,12 @@ export function createExtensionReflection(
 
   for (const [route, commandSet] of routeMap) {
     for (const data of commandSet) {
-      createCommandReflection(log, parentCtx, data, extRefl, route);
+      createCommandReflection(parentCtx, data, extRefl, route);
     }
   }
 
   for (const data of execCommandsData) {
-    createCommandReflection(log, parentCtx, data, extRefl);
+    createCommandReflection(parentCtx, data, extRefl);
   }
 
   ctx.finalizeDeclarationReflection(extRefl);
@@ -151,7 +154,7 @@ export function omitDefaultReflections(
   project: ProjectReflection,
   refl: ContainerReflection = project
 ): Set<DeclarationReflection> {
-  let removed = new Set<DeclarationReflection>();
+  const removed = new Set<DeclarationReflection>();
   for (const childRefl of refl.getChildrenByKind(~(AppiumPluginReflectionKind.Extension as any))) {
     project.removeReflection(childRefl);
     removed.add(childRefl);
@@ -171,7 +174,7 @@ export function omitBuiltinReflections(
   project: ProjectReflection,
   refl: ContainerReflection = project
 ) {
-  let removed = new Set<DeclarationReflection>();
+  const removed = new Set<DeclarationReflection>();
 
   const extRefls = refl.getChildrenByKind(
     AppiumPluginReflectionKind.Extension as any

@@ -17,15 +17,15 @@ import {
   RouteMap,
 } from '../model';
 import {BaseConverter} from './base-converter';
-import {convertOverrides} from './overrides';
 import {convertExecuteMethodMap} from './exec-method-map';
 import {convertMethodMap} from './method-map';
+import {convertOverrides} from './overrides';
 import {ClassDeclarationReflection, KnownMethods} from './types';
 import {
   filterChildrenByGuard,
   findChildByGuard,
   findChildByNameAndGuard,
-  findAsyncMethodsInReflection,
+  findCommandMethodsInReflection,
 } from './utils';
 
 /**
@@ -152,22 +152,22 @@ export class ExternalConverter extends BaseConverter<ProjectCommands> {
         findChildByGuard(classRefl, isConstructorDeclarationReflection)
       );
 
-      const methods = findAsyncMethodsInReflection(classRefl);
+      const classMethods: KnownMethods = findCommandMethodsInReflection(classRefl);
 
-      if (!methods.size) {
+      if (!classMethods.size) {
         // may or may not be expected
         log.verbose('No methods found');
         continue;
       }
 
-      log.verbose('Analyzing %s', pluralize('method', methods.size, true));
+      log.verbose('Analyzing %s', pluralize('method', classMethods.size, true));
 
-      const newRouteMap = this.#findAndConvertNewMethodMap(classRefl, methods, log, isPlugin);
+      const newRouteMap = this.#findAndConvertNewMethodMap(classRefl, classMethods, log, isPlugin);
       routeMap = new Map([...routeMap, ...newRouteMap]);
 
       const newExecMethodData = this.#findAndConvertExecMethodMap(
         classRefl,
-        methods,
+        classMethods,
         log,
         isPlugin
       );
@@ -175,9 +175,10 @@ export class ExternalConverter extends BaseConverter<ProjectCommands> {
 
       const overriddenRouteMap: RouteMap = this.builtinCommands
         ? convertOverrides({
+            ctx: this.ctx,
             log,
             parentRefl: classRefl,
-            classMethods: methods,
+            classMethods,
             builtinMethods: this.builtinMethods,
             newRouteMap,
             newExecMethodMap: execMethodData,
@@ -217,10 +218,11 @@ export class ExternalConverter extends BaseConverter<ProjectCommands> {
       return new Set();
     }
     return convertExecuteMethodMap({
+      ctx: this.ctx,
       log,
       parentRefl,
       execMethodMapRefl,
-      builtinMethods: methods,
+      knownMethods: methods,
       strict: true,
       isPluginCommand,
     });
@@ -250,11 +252,12 @@ export class ExternalConverter extends BaseConverter<ProjectCommands> {
       return new Map();
     }
     return convertMethodMap({
+      ctx: this.ctx,
       log,
       methodMapRefl: newMethodMapRefl,
       parentRefl,
-      methods,
-      knownMethods: this.builtinMethods,
+      knownClassMethods: methods,
+      knownBuiltinMethods: this.builtinMethods,
       strict: true,
       isPluginCommand,
     });

@@ -10,6 +10,7 @@ import {
   DELETE_SESSION_COMMAND,
   GET_STATUS_COMMAND,
   promoteAppiumOptions,
+  promoteAppiumOptionsForObject,
 } from '@appium/base-driver';
 import AsyncLock from 'async-lock';
 import {parseCapsForInnerDriver, pullSettings} from './utils';
@@ -44,7 +45,7 @@ class AppiumDriver extends DriverCore {
    * It is not recommended to access this property directly from the outside
    * @type {Record<string,ExternalDriver>}
    */
-  sessions = {};
+  sessions;
 
   /**
    * Access to pending drivers list must be guarded with a Semaphore, because
@@ -52,14 +53,14 @@ class AppiumDriver extends DriverCore {
    * It is not recommended to access this property directly from the outside
    * @type {Record<string,ExternalDriver[]>}
    */
-  pendingDrivers = {};
+  pendingDrivers;
 
   /**
    * Note that {@linkcode AppiumDriver} has no `newCommandTimeout` method.
    * `AppiumDriver` does not set and observe its own timeouts; individual
    * sessions (managed drivers) do instead.
    */
-  newCommandTimeoutMs = 0;
+  newCommandTimeoutMs;
 
   /**
    * List of active plugins
@@ -71,13 +72,13 @@ class AppiumDriver extends DriverCore {
    * map of sessions to actual plugin instances per session
    * @type {Record<string,InstanceType<PluginClass>[]>}
    */
-  sessionPlugins = {};
+  sessionPlugins;
 
   /**
    * some commands are sessionless, so we need a set of plugins for them
    * @type {InstanceType<PluginClass>[]}
    */
-  sessionlessPlugins = [];
+  sessionlessPlugins;
 
   /** @type {DriverConfig} */
   driverConfig;
@@ -85,7 +86,11 @@ class AppiumDriver extends DriverCore {
   /** @type {AppiumServer} */
   server;
 
-  desiredCapConstraints = desiredCapabilityConstraints;
+  /**
+   * @type {AppiumDriverConstraints}
+   * @readonly
+   */
+  desiredCapConstraints;
 
   /** @type {DriverOpts} */
   args;
@@ -105,6 +110,13 @@ class AppiumDriver extends DriverCore {
     super(opts);
 
     this.args = {...opts};
+    this.sessions = {};
+    this.pendingDrivers = {};
+    this.newCommandTimeoutMs = 0;
+    this.pluginClasses = new Map();
+    this.sessionPlugins = {};
+    this.sessionlessPlugins = [];
+    this.desiredCapConstraints = desiredCapabilityConstraints;
 
     // allow this to happen in the background, so no `await`
     (async () => {
@@ -244,7 +256,7 @@ class AppiumDriver extends DriverCore {
         jsonwpCaps,
         promoteAppiumOptions(w3cCapabilities),
         this.desiredCapConstraints,
-        defaultCapabilities
+        defaultCapabilities ? promoteAppiumOptionsForObject(defaultCapabilities) : undefined
       );
 
       const {desiredCaps, processedJsonwpCapabilities, processedW3CCapabilities} =
@@ -278,7 +290,7 @@ class AppiumDriver extends DriverCore {
        */
       let otherPendingDriversData = [];
 
-      const driverInstance = new InnerDriver(this.args, true);
+      const driverInstance = /** @type {ExternalDriver} */ (new InnerDriver(this.args, true));
 
       // We want to assign security values directly on the driver. The driver
       // should not read security values from `this.opts` because those values

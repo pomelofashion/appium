@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import {DeclarationReflection, ReflectionKind} from 'typedoc';
+import {Context, DeclarationReflection, ReflectionKind} from 'typedoc';
 import {
   isCommandPropDeclarationReflection,
   isExecMethodDefParamsPropDeclarationReflection,
@@ -19,6 +19,7 @@ import {
  * Options for {@linkcode convertExecuteMethodMap}
  */
 export interface ConvertExecuteMethodMapOpts {
+  ctx: Context;
   /**
    * Logger
    */
@@ -34,7 +35,7 @@ export interface ConvertExecuteMethodMapOpts {
   /**
    * Builtin methods from `@appium/types`
    */
-  builtinMethods: KnownMethods;
+  knownMethods: KnownMethods;
   /**
    * If `true`, do not add a route if the method it references cannot be found
    */
@@ -51,10 +52,11 @@ export interface ConvertExecuteMethodMapOpts {
  * @returns List of "execute commands", if any
  */
 export function convertExecuteMethodMap({
+  ctx,
   log,
   parentRefl,
   execMethodMapRefl,
-  builtinMethods,
+  knownMethods,
   strict = false,
   isPluginCommand = false,
 }: ConvertExecuteMethodMapOpts): ExecMethodDataSet {
@@ -98,26 +100,26 @@ export function convertExecuteMethodMap({
     const requiredParams = convertRequiredCommandParams(paramsProp);
     const optionalParams = convertOptionalCommandParams(paramsProp);
 
-    const methodRefl = builtinMethods.get(command);
+    const methodRefl = knownMethods.get(command);
 
-    if (strict && !methodRefl) {
-      log.error('No method found for command "%s" from script "%s"', command, script);
+    if (!methodRefl) {
+      if (strict) {
+        log.error('No method found for command "%s" from script "%s"', command, script);
+      }
       continue;
     }
 
-    const commentData = deriveComment({refl: methodRefl, comment, knownMethods: builtinMethods});
+    const commentData = deriveComment({refl: methodRefl, comment, knownMethods});
 
-    commandRefs.add(
-      new ExecMethodData(log, command, script, {
-        requiredParams,
-        optionalParams,
-        refl: methodRefl,
-        comment: commentData?.comment,
-        commentSource: commentData?.commentSource,
-        isPluginCommand,
-      })
-    );
+    const execMethodData = ExecMethodData.create(ctx, log, command, methodRefl, script, {
+      requiredParams,
+      optionalParams,
+      comment: commentData?.comment,
+      commentSource: commentData?.commentSource,
+      isPluginCommand,
+    });
 
+    commandRefs.add(execMethodData);
     log.verbose(
       'Added POST route %s for command "%s" from script "%s"',
       NAME_EXECUTE_ROUTE,

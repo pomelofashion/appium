@@ -100,13 +100,13 @@ export function initAppForPkgs({
   tsconfig = ROOT_TSCONFIG,
   ...opts
 }: SetRequired<Partial<TypeDocOptions>, 'entryPoints'>): Application {
-  let {entryPoints, ...typedocOpts} = opts;
+  let {entryPoints} = opts;
   entryPoints = entryPoints.map((pkgName) =>
     path.dirname(require.resolve(`${pkgName}/${NAME_PACKAGE_JSON}`))
   );
   // because entryPoints is a list of directories, this must be 'packages'
   const entryPointStrategy = EntryPointStrategy.Packages;
-  return getTypedocApp({...typedocOpts, entryPoints, entryPointStrategy});
+  return getTypedocApp({...opts, tsconfig, entryPoints, entryPointStrategy});
 }
 
 /**
@@ -130,13 +130,13 @@ async function convert<T, C extends BaseConverter<T>, Args extends readonly any[
         resolve(new cls(ctx, log));
       }
     };
-    app.converter.once(Converter.EVENT_RESOLVE_BEGIN, listener);
+    app.converter.once(Converter.EVENT_RESOLVE_END, listener);
     try {
       app.convert();
     } catch (err) {
       reject(err);
     } finally {
-      app.converter.off(Converter.EVENT_RESOLVE_BEGIN, listener);
+      app.converter.off(Converter.EVENT_RESOLVE_END, listener);
     }
   });
 }

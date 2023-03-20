@@ -3,6 +3,52 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.10.1](https://github.com/appium/appium/compare/@appium/types@0.10.0...@appium/types@0.10.1) (2023-03-08)
+
+
+### Bug Fixes
+
+* **types:** callback to implicitWaitForCondition accepts args ([5684c4e](https://github.com/appium/appium/commit/5684c4e2860d7f7043c6252f1e447a653b49955a))
+* **types:** type fixes & improvements ([e2aa3d3](https://github.com/appium/appium/commit/e2aa3d3b32235072c99647c3a0bad5adc1965b22))
+* **types:** update dependency type-fest to v3.6.1 ([471a4b5](https://github.com/appium/appium/commit/471a4b57e622ff077d59f577a78341268700c48d))
+
+
+
+
+
+# [0.10.0](https://github.com/appium/appium/compare/@appium/types@0.9.1...@appium/types@0.10.0) (2023-02-24)
+
+
+### Bug Fixes
+
+* **types:** base cap webSocketUrl is now a boolean instead of a string. ([24fb515](https://github.com/appium/appium/commit/24fb515a52349058a8c9b69eafa531876880dffd))
+* **types:** update dependency type-fest to v3.5.7 ([b4416c5](https://github.com/appium/appium/commit/b4416c5c0f40200b36909a1fbb492d8c4a212108))
+* **types:** update dependency type-fest to v3.6.0 ([08a6f3a](https://github.com/appium/appium/commit/08a6f3a308c7ee162e992629888557b31e50a26e))
+
+
+### Features
+
+* **types:** add orientation type; add optional ELEMENT prop of Element ([ab5b285](https://github.com/appium/appium/commit/ab5b285714a804a3a665723e893b82bd93e25854))
+
+
+
+
+
+## [0.9.1](https://github.com/appium/appium/compare/@appium/types@0.9.0...@appium/types@0.9.1) (2023-02-09)
+
+
+### Bug Fixes
+
+* **types:** update definitelytyped ([172bdae](https://github.com/appium/appium/commit/172bdae436efa75c5928972322d260184c225dd6))
+* **types:** update dependency @types/express to v4.17.16 ([644f300](https://github.com/appium/appium/commit/644f300cd87edbf3788eb82c4c88f6b773e653b0))
+* **types:** update dependency type-fest to v3.5.4 ([cfb5297](https://github.com/appium/appium/commit/cfb529772cff3a2b7e9ff36e12444b603906a769))
+* **types:** update dependency type-fest to v3.5.5 ([9bf320c](https://github.com/appium/appium/commit/9bf320c87ccf574f933a8247a851b4f848c39fa1))
+* **types:** update dependency type-fest to v3.5.6 ([775c990](https://github.com/appium/appium/commit/775c990f9d4176e78936a071968a788e19048519))
+
+
+
+
+
 # [0.9.0](https://github.com/appium/appium/compare/@appium/types@0.8.3...@appium/types@0.9.0) (2023-01-23)
 
 

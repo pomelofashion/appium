@@ -6,6 +6,7 @@
 import {
   DeclarationReflection,
   LiteralType,
+  ParameterReflection,
   ProjectReflection,
   ReferenceType,
   Reflection,
@@ -280,7 +281,7 @@ export function isExternalDriverDeclarationReflection(
  * call signature returning a `Promise`.
  * @param value
  */
-export function isAsyncMethodDeclarationReflection(
+export function isCommandMethodDeclarationReflection(
   value: any
 ): value is CommandMethodDeclarationReflection {
   if (
@@ -294,7 +295,7 @@ export function isAsyncMethodDeclarationReflection(
     ? value.type.declaration.getAllSignatures()
     : value.getAllSignatures();
   return Boolean(
-    signatures?.find((sig) => isReferenceType(sig.type) && sig.type.name === 'Promise')
+    signatures?.find((sig) => sig.type instanceof ReferenceType && sig.type.name === 'Promise')
   );
 }
 
@@ -330,14 +331,6 @@ export function isCallSignatureReflectionWithArity(
 }
 
 /**
- * Guard for {@linkcode ReferenceType}
- * @param value any
- */
-export function isReferenceType(value: any): value is ReferenceType {
-  return value instanceof ReferenceType;
-}
-
-/**
  * Guard for {@linkcode ConstructorDeclarationReflection}
  * @param value any
  */
@@ -357,10 +350,19 @@ export function isBasePluginConstructorDeclarationReflection(
   if (!(isDeclarationReflection(value) && value.kindOf(ReflectionKind.Constructor))) {
     return false;
   }
-  const ref = isReferenceType(value.inheritedFrom)
-    ? value.inheritedFrom
-    : isReferenceType(value.overwrites)
-    ? value.overwrites
-    : undefined;
+  const ref =
+    value.inheritedFrom instanceof ReferenceType
+      ? value.inheritedFrom
+      : value.overwrites instanceof ReferenceType
+      ? value.overwrites
+      : undefined;
   return ref?.name === `${NAME_BASE_PLUGIN}.constructor`;
+}
+
+/**
+ * Guard for {@linkcode ParameterReflection}
+ * @param value any
+ */
+export function isParameterReflection(value: any): value is ParameterReflection {
+  return value instanceof ParameterReflection;
 }

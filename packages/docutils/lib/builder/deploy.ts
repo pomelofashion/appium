@@ -5,8 +5,8 @@
  */
 
 import _ from 'lodash';
-import {exec, SubProcess, TeenProcessExecOptions} from 'teen_process';
 import path from 'node:path';
+import {exec, TeenProcessExecOptions} from 'teen_process';
 import {
   DEFAULT_DEPLOY_BRANCH,
   DEFAULT_DEPLOY_REMOTE,
@@ -18,7 +18,7 @@ import {
 import {DocutilsError} from '../error';
 import {findMkDocsYml, readPackageJson, whichMike} from '../fs';
 import logger from '../logger';
-import {argify, stopwatch, TeenProcessSubprocessStartOpts} from '../util';
+import {argify, spawnBackgroundProcess, SpawnBackgroundProcessOpts, stopwatch} from '../util';
 
 const log = logger.withTag('builder:deploy');
 
@@ -30,14 +30,12 @@ const log = logger.withTag('builder:deploy');
  */
 async function doServe(
   args: string[] = [],
-  {startDetector, detach, timeoutMs}: TeenProcessSubprocessStartOpts = {},
+  opts: SpawnBackgroundProcessOpts = {},
   mikePath?: string
 ) {
   mikePath = mikePath ?? (await whichMike());
   const finalArgs = ['serve', ...args];
-  log.debug('Launching %s with args: %O', mikePath, finalArgs);
-  const proc = new SubProcess(mikePath, finalArgs);
-  return await proc.start(startDetector, detach, timeoutMs);
+  return spawnBackgroundProcess(mikePath, finalArgs, opts);
 }
 
 /**
@@ -74,7 +72,7 @@ async function findDeployVersion(packageJsonPath?: string, cwd = process.cwd()):
  * @param opts Options
  */
 export async function deploy({
-  mkDocsYml: mkDocsYmlPath,
+  mkdocsYml: mkDocsYmlPath,
   packageJson: packageJsonPath,
   deployVersion: version,
   cwd = process.cwd(),
@@ -99,6 +97,10 @@ export async function deploy({
     );
   }
   version = version ?? (await findDeployVersion(packageJsonPath, cwd));
+
+  // substitute %s in message with version
+  message = message?.replace('%s', version);
+
   const mikeOpts = {
     'config-file': mkDocsYmlPath,
     push,
@@ -111,16 +113,23 @@ export async function deploy({
     host,
   };
   if (serve) {
-    const mikeArgs = [...argify(_.pickBy(mikeOpts, Boolean)), version];
+    const mikeArgs = [
+      ...argify(_.pickBy(mikeOpts, (value) => _.isNumber(value) || Boolean(value))),
+      version,
+    ];
     if (alias) {
       mikeArgs.push(alias);
     }
+    stop(); // discard
     // unsure about how SIGHUP is handled here
     await doServe(mikeArgs, serveOpts);
   } else {
     const mikeArgs = [
       ...argify(
-        _.omitBy(mikeOpts, (value, key) => _.includes(['port', 'host'], key) || value === false)
+        _.omitBy(
+          mikeOpts,
+          (value, key) => _.includes(['port', 'host'], key) || (!_.isNumber(value) && !value)
+        )
       ),
       version,
     ];
@@ -140,7 +149,7 @@ export interface DeployOpts {
   /**
    * Path to `mike.yml`
    */
-  mkDocsYml?: string;
+  mkdocsYml?: string;
 
   /**
    * Current working directory
@@ -211,7 +220,7 @@ export interface DeployOpts {
   execOpts?: TeenProcessExecOptions;
 
   /**
-   * Extra options for {@linkcode teen_process.Subprocess.start}
+   * Extra options for {@linkcode spawnBackgroundProcess}
    */
-  serveOpts?: TeenProcessSubprocessStartOpts;
+  serveOpts?: SpawnBackgroundProcessOpts;
 }

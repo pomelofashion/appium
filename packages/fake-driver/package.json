@@ -1,6 +1,6 @@
 {
   "name": "@appium/fake-driver",
-  "version": "5.1.4",
+  "version": "5.2.1",
   "description": "Mock driver used internally by Appium for testing. Ignore",
   "keywords": [
     "automation",
@@ -75,7 +75,8 @@
     "schema": "./build/lib/fake-driver-schema.js",
     "scripts": {
       "fake-error": "./build/lib/scripts/fake-error.js",
-      "fake-success": "./build/lib/scripts/fake-success.js"
+      "fake-success": "./build/lib/scripts/fake-success.js",
+      "fake-stdin": "./build/lib/scripts/fake-stdin.js"
     }
   },
   "typedoc": {

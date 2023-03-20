@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import {DeclarationReflection} from 'typedoc';
+import {Context, DeclarationReflection} from 'typedoc';
 import {AppiumPluginLogger} from '../logger';
-import {CommandSet, ExecMethodDataSet, ModuleCommands, RouteMap} from '../model';
+import {CommandData, CommandSet, ExecMethodDataSet, ModuleCommands, RouteMap} from '../model';
 import {deriveComment} from './comment';
 import {KnownMethods} from './types';
 
@@ -16,6 +16,7 @@ import {KnownMethods} from './types';
  * @returns More routes pulled from `builtinCommands`, if the driver implements them
  */
 export function convertOverrides({
+  ctx,
   log,
   parentRefl,
   classMethods,
@@ -71,19 +72,22 @@ export function convertOverrides({
       // this must be defined, because if it wasn't then builtinRoutes would be empty and we'd continue the loop
       const commandSet = builtinCommands.routeMap.get(route)!;
       for (const commandData of commandSet) {
-        const method = classMethods.get(command);
-        if (!method) {
+        const methodRefl = classMethods.get(command);
+        if (!methodRefl) {
           log.warn('No such method "%s"; this is a bug', command);
           continue;
         }
         const commentData = deriveComment({
-          refl: method,
+          refl: methodRefl,
           knownMethods: builtinMethods,
         });
-        const newCommandData = commandData.clone({
-          refl: method,
+        const newCommandData = CommandData.clone(commandData, ctx, {
+          methodRefl,
           parentRefl,
-          ...commentData,
+          knownBuiltinMethods: builtinMethods,
+          opts: {
+            comment: commentData?.comment,
+          },
         });
         log.verbose('Linked route %s %s for command "%s"', commandData.httpMethod, route, command);
         newCommandSet.add(newCommandData);
@@ -99,6 +103,7 @@ export function convertOverrides({
  * Options for {@link convertOverrides}
  */
 export interface ConvertOverridesOpts {
+  ctx: Context;
   /**
    * Logger
    */

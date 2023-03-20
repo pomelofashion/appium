@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import {DeclarationReflection, ReflectionKind} from 'typedoc';
+import {Context, DeclarationReflection, ReflectionKind} from 'typedoc';
 import {
   isCommandPropDeclarationReflection,
   isExecMethodDefParamsPropDeclarationReflection,
@@ -22,10 +22,11 @@ import {
  * Options for {@linkcode convertMethodMap}
  */
 export interface ConvertMethodMapOpts {
+  ctx: Context;
   /**
    * All builtin methods from `@appium/types`
    */
-  knownMethods?: KnownMethods;
+  knownBuiltinMethods: KnownMethods;
   /**
    * Logger
    */
@@ -37,7 +38,7 @@ export interface ConvertMethodMapOpts {
   /**
    * All async methods in `parentRefl`
    */
-  methods: KnownMethods;
+  knownClassMethods: KnownMethods;
   /**
    * The parent of `methodMapRef`; could be a class or module
    */
@@ -59,11 +60,12 @@ export interface ConvertMethodMapOpts {
  * @returns Lookup of routes to {@linkcode CommandSet} objects
  */
 export function convertMethodMap({
+  ctx,
   log,
   methodMapRefl,
   parentRefl,
-  methods,
-  knownMethods = new Map(),
+  knownClassMethods,
+  knownBuiltinMethods,
   strict = false,
   isPluginCommand = false,
 }: ConvertMethodMapOpts): RouteMap {
@@ -108,18 +110,25 @@ export function convertMethodMap({
 
       const command = String(commandProp.type.value);
 
-      const method = methods.get(command);
+      const method = knownClassMethods.get(command);
 
-      if (strict && !method) {
-        log.warn('(%s) No method found for command "%s"; this is a bug', parentRefl.name, command);
+      if (!method) {
+        if (strict) {
+          log.error(
+            '(%s) No method found for command "%s"; this may be a bug',
+            parentRefl.name,
+            command
+          );
+        }
         continue;
       }
 
       const commentData = deriveComment({
         refl: method,
         comment: mapComment,
-        knownMethods,
+        knownMethods: knownBuiltinMethods,
       });
+      const {comment, commentSource} = commentData ?? {};
 
       const payloadParamsProp = findChildByGuard(
         httpMethodProp,
@@ -131,17 +140,17 @@ export function convertMethodMap({
 
       const commandSet: CommandSet = routes.get(route) ?? new Set();
 
-      commandSet.add(
-        new CommandData(log, command, httpMethod, route, {
-          requiredParams,
-          optionalParams,
-          comment: commentData?.comment,
-          commentSource: commentData?.commentSource,
-          refl: method,
-          parentRefl,
-          isPluginCommand,
-        })
-      );
+      const commandData = CommandData.create(ctx, log, command, method, httpMethod, route, {
+        requiredParams,
+        optionalParams,
+        comment,
+        commentSource,
+        parentRefl,
+        isPluginCommand,
+        knownBuiltinMethods,
+      });
+
+      commandSet.add(commandData);
 
       log.verbose('Registered route %s %s for command "%s"', httpMethod, route, command);
 

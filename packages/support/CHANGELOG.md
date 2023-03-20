@@ -3,6 +3,60 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.1.7](https://github.com/appium/appium/compare/@appium/support@3.1.6...@appium/support@3.1.7) (2023-03-08)
+
+
+### Bug Fixes
+
+* **appium,support:** fs.readPackageJsonFrom() returns proper type ([9ccbab5](https://github.com/appium/appium/commit/9ccbab5dc02d0019b0cad903772cda872d9fd5fb))
+* **support:** Improve error description on image load ([#18284](https://github.com/appium/appium/issues/18284)) ([2a6a13a](https://github.com/appium/appium/commit/2a6a13ac89f9731b85670b8528e6c1fc3fafd680))
+* **support:** remove all logging from env module ([2359a2b](https://github.com/appium/appium/commit/2359a2ba3b738b5c5f74807fb14260789cc6e4ba)), closes [#16970](https://github.com/appium/appium/issues/16970)
+* **support:** update dependency @types/glob to v8.1.0 ([96898c8](https://github.com/appium/appium/commit/96898c87d52444185988ff0ccbac1e109104d7bb))
+* **support:** update dependency jimp to v0.22.7 ([188ed16](https://github.com/appium/appium/commit/188ed161e4156aab4381b27fcb6f6d1fccbc0e73))
+* **support:** update dependency pngjs to v7 ([85e4bd8](https://github.com/appium/appium/commit/85e4bd892548343db7d4f7ed82b275dd296c748e))
+* **types:** update dependency type-fest to v3.6.1 ([471a4b5](https://github.com/appium/appium/commit/471a4b57e622ff077d59f577a78341268700c48d))
+
+
+
+
+
+## [3.1.6](https://github.com/appium/appium/compare/@appium/support@3.1.5...@appium/support@3.1.6) (2023-02-24)
+
+
+### Bug Fixes
+
+* **support:** update dependency @types/uuid to v9.0.1 ([91831cf](https://github.com/appium/appium/commit/91831cf82da943726d04e9f38a3b63c9304fb20e))
+* **support:** update dependency axios to v1.3.4 ([49f157d](https://github.com/appium/appium/commit/49f157d63e3bdbd205527a5dc8f997df68540546))
+* **support:** update dependency jimp to v0.22.5 ([998514f](https://github.com/appium/appium/commit/998514fccee0b1a7381b810280cbc30558c3c282))
+* **types:** update dependency type-fest to v3.5.7 ([b4416c5](https://github.com/appium/appium/commit/b4416c5c0f40200b36909a1fbb492d8c4a212108))
+* **types:** update dependency type-fest to v3.6.0 ([08a6f3a](https://github.com/appium/appium/commit/08a6f3a308c7ee162e992629888557b31e50a26e))
+* update axios to v1.3.3 ([8f9de63](https://github.com/appium/appium/commit/8f9de63e4a622712db545ab63f9f4ce6654e4a91))
+
+
+
+
+
+## [3.1.5](https://github.com/appium/appium/compare/@appium/support@3.1.4...@appium/support@3.1.5) (2023-02-09)
+
+
+### Bug Fixes
+
+* **base-driver,driver-test-support,support:** update types for axios@1.2.3 ([c5451e4](https://github.com/appium/appium/commit/c5451e4d8280483dabca6e0bc62736689406d3df))
+* **support:** update dependency axios to v1.2.3 ([20c176b](https://github.com/appium/appium/commit/20c176bae7d0a4f928082fe1a9237f995b8bd58e))
+* **support:** update dependency jimp to v0.16.13 ([9ce3263](https://github.com/appium/appium/commit/9ce32639187fcd7195216ccf7393caba1b1ef48c))
+* **support:** update dependency jimp to v0.17.10 ([8129a22](https://github.com/appium/appium/commit/8129a228a9a76c4b9d94402b8d6fa106777d7bbf))
+* **support:** update dependency jimp to v0.21.0 ([9bc1fbd](https://github.com/appium/appium/commit/9bc1fbdf3d881fbdc32be1e1466d6ec367959340))
+* **support:** update dependency jimp to v0.21.3 ([3b4d9dd](https://github.com/appium/appium/commit/3b4d9dde6080569f05057bdb1bb600c2a0cf8eb6))
+* **support:** update dependency jimp to v0.22.4 ([742abf2](https://github.com/appium/appium/commit/742abf25035fe5ea5aa280c1ed09ffec5d4f97cf))
+* **support:** update dependency shell-quote to v1.8.0 ([16d7335](https://github.com/appium/appium/commit/16d73357da3c498a456fa4a8e076ecf167150adf))
+* **types:** update dependency type-fest to v3.5.4 ([cfb5297](https://github.com/appium/appium/commit/cfb529772cff3a2b7e9ff36e12444b603906a769))
+* **types:** update dependency type-fest to v3.5.5 ([9bf320c](https://github.com/appium/appium/commit/9bf320c87ccf574f933a8247a851b4f848c39fa1))
+* **types:** update dependency type-fest to v3.5.6 ([775c990](https://github.com/appium/appium/commit/775c990f9d4176e78936a071968a788e19048519))
+
+
+
+
+
 ## [3.1.4](https://github.com/appium/appium/compare/@appium/support@3.1.3...@appium/support@3.1.4) (2023-01-23)
 
 

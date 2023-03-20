@@ -5,17 +5,16 @@ import {
   AppiumServer,
   UpdateServerCallback,
   Class,
-  MethodMap,
   AppiumLogger,
   StringRecord,
   ConstraintsToCaps,
   BaseDriverCapConstraints,
   W3CCapabilities,
   Capabilities,
-  ExecuteMethodMap,
 } from '.';
 import {ServerArgs} from './config';
 import {AsyncReturnType, Entries} from 'type-fest';
+import {MethodMap, ExecuteMethodMap} from './command';
 
 export interface ITimeoutCommands {
   /**
@@ -66,7 +65,7 @@ export interface ITimeoutCommands {
    *
    * @returns The return value of the condition
    */
-  implicitWaitForCondition(condition: () => Promise<any>): Promise<unknown>;
+  implicitWaitForCondition(condition: (...args: any[]) => Promise<any>): Promise<unknown>;
 
   /**
    * Get the current timeouts
@@ -183,7 +182,7 @@ export interface IExecuteCommands {
    *
    * @returns The result of calling the Execute Method
    */
-  executeMethod(script: string, args: [StringRecord] | []): Promise<any>;
+  executeMethod<TReturn = any>(script: string, args: [StringRecord] | any[]): Promise<TReturn>;
 }
 
 export interface MultiSessionData<
@@ -199,7 +198,7 @@ export type SingularSessionData<
   Extra extends StringRecord | void = void
 > = Capabilities<C, Extra> & {events?: EventHistory; error?: string};
 
-export interface IFindCommands<Ctx = any> {
+export interface IFindCommands {
   /**
    * Find a UI element given a locator strategy and a selector, erroring if it can't be found
    * @see {@link https://w3c.github.io/webdriver/#find-element}
@@ -294,7 +293,7 @@ export interface IFindCommands<Ctx = any> {
    *
    * @returns A single element or list of elements
    */
-  findElOrEls<Mult extends boolean>(
+  findElOrEls<Mult extends boolean, Ctx = any>(
     strategy: string,
     selector: string,
     mult: Mult,
@@ -312,7 +311,7 @@ export interface IFindCommands<Ctx = any> {
    *
    * @returns A single element or list of elements
    */
-  findElOrElsWithProcessing<Mult extends boolean>(
+  findElOrElsWithProcessing<Mult extends boolean, Ctx = any>(
     strategy: string,
     selector: string,
     mult: Mult,
@@ -328,41 +327,35 @@ export interface IFindCommands<Ctx = any> {
   getPageSource(): Promise<string>;
 }
 
-export interface ILogCommands<C extends Constraints> {
+export interface ILogCommands {
   /**
    * Definition of the available log types
    */
-  supportedLogTypes: Readonly<LogDefRecord<C>>;
+  supportedLogTypes: Readonly<LogDefRecord>;
 
   /**
    * Get available log types as a list of strings
    */
-  getLogTypes(): Promise<(keyof ILogCommands<C>['supportedLogTypes'])[]>;
+  getLogTypes(): Promise<string[]>;
 
   /**
    * Get the log for a given log type.
    *
    * @param logType - Name/key of log type as defined in {@linkcode ILogCommands.supportedLogTypes}.
    */
-  getLog(
-    logType: keyof ILogCommands<C>['supportedLogTypes']
-  ): Promise<
-    AsyncReturnType<
-      ILogCommands<C>['supportedLogTypes'][keyof ILogCommands<C>['supportedLogTypes']]['getter']
-    >
-  >;
+  getLog(logType: string): Promise<any[]>;
 }
 
 /**
  * A record of {@linkcode LogDef} objects, keyed by the log type name.
  * Used in {@linkcode ILogCommands.supportedLogTypes}
  */
-export type LogDefRecord<C extends Constraints> = Record<string, LogDef<C>>;
+export type LogDefRecord = Record<string, LogDef>;
 
 /**
  * A definition of a log type
  */
-export interface LogDef<C extends Constraints, T = unknown> {
+export interface LogDef {
   /**
    * Description of the log type.
    *
@@ -375,7 +368,7 @@ export interface LogDef<C extends Constraints, T = unknown> {
    *
    * This implementation *should* drain, truncate or otherwise reset the log buffer.
    */
-  getter: (driver: Driver<C>) => Promise<T[]>;
+  getter: <C extends Constraints, T = any>(driver: Driver<C>) => Promise<T[]>;
 }
 
 export interface ISettingsCommands {
@@ -570,6 +563,8 @@ export interface Credential {
   largeBlob?: string;
 }
 
+export type Orientation = 'LANDSCAPE' | 'PORTRAIT';
+
 export interface EventHistory {
   commands: EventHistoryCommand[];
   [key: string]: any;
@@ -651,7 +646,7 @@ export interface Core<C extends Constraints = BaseDriverCapConstraints> {
   canProxy(sessionId?: string): boolean;
   proxyRouteIsAvoided(sessionId: string, method: string, url: string): boolean;
   addManagedDriver(driver: Driver): void;
-  getManagedDrivers(): Driver[];
+  getManagedDrivers(): Driver<Constraints>[];
   clearNewCommandTimeout(): Promise<void>;
   logEvent(eventName: string): void;
   driverForSession(sessionId: string): Core<C> | null;
@@ -666,12 +661,11 @@ export interface Core<C extends Constraints = BaseDriverCapConstraints> {
  * `Ctx` would be the type of the element context (e.g., string, dictionary of some sort, etc.)
  */
 export interface Driver<
-  C extends Constraints = BaseDriverCapConstraints,
-  CArgs extends StringRecord = StringRecord,
-  Ctx = any
+  C extends Constraints = Constraints,
+  CArgs extends StringRecord = StringRecord
 > extends ISessionCommands,
-    ILogCommands<C>,
-    IFindCommands<Ctx>,
+    ILogCommands,
+    IFindCommands,
     ISettingsCommands,
     ITimeoutCommands,
     IEventCommands,
@@ -767,8 +761,7 @@ export interface Driver<
  * External drivers must subclass `BaseDriver`, and can implement any of these methods.
  * None of these are implemented within Appium itself.
  */
-export interface ExternalDriver<C extends Constraints = BaseDriverCapConstraints>
-  extends Driver<C> {
+export interface ExternalDriver<C extends Constraints = Constraints> extends Driver<C> {
   // The following properties are assigned by appium */
   server?: AppiumServer;
   serverHost?: string;
@@ -2205,11 +2198,11 @@ export interface ExternalDriver<C extends Constraints = BaseDriverCapConstraints
  *
  * This is likely unusable by external consumers, but YMMV!
  */
-export interface DriverStatic<D extends Driver> {
+export interface DriverStatic<T extends Driver> {
   baseVersion: string;
   updateServer?: UpdateServerCallback;
-  newMethodMap?: MethodMap<D>;
-  executeMethodMap?: ExecuteMethodMap<D>;
+  newMethodMap?: MethodMap<T>;
+  executeMethodMap?: ExecuteMethodMap<T>;
 }
 
 /**
@@ -2217,9 +2210,9 @@ export interface DriverStatic<D extends Driver> {
  *
  * This is likely unusable by external consumers, but YMMV!
  */
-export type DriverClass<D extends Driver = ExternalDriver> = Class<
-  D,
-  DriverStatic<D>,
+export type DriverClass<T extends Driver = Driver> = Class<
+  T,
+  DriverStatic<T>,
   [] | [Partial<ServerArgs>] | [Partial<ServerArgs>, boolean]
 >;
 
@@ -2236,7 +2229,12 @@ export type DriverOpts<C extends Constraints = BaseDriverCapConstraints> = Serve
   ExtraDriverOpts &
   Partial<ConstraintsToCaps<C>>;
 
-export type DriverCommand<TArgs = any, TReturn = unknown> = (...args: TArgs[]) => Promise<TReturn>;
+/**
+ * An instance method of a driver class, whose name may be referenced by {@linkcode MethodDef.command}, and serves as an Appium command.
+ *
+ * Note that this signature differs from a `PluginCommand`.
+ */
+export type DriverCommand<TArgs = any, TRetval = unknown> = (...args: TArgs[]) => Promise<TRetval>;
 
 export type DriverCommands<TArgs = any, TReturn = unknown> = Record<
   string,

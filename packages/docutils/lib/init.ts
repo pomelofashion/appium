@@ -126,7 +126,9 @@ export const initMkDocs = createScaffoldTask<InitMkDocsOptions, MkDocsYml>(
       if (repoUrl && !repoName) {
         let {pathname} = new URL(repoUrl);
         pathname = pathname.slice(1);
-        let [owner, repo] = pathname.split('/');
+        const pathparts = pathname.split('/');
+        const owner = pathparts[0];
+        let repo = pathparts[1];
         repo = repo.replace(/\.git$/, '');
         repoName = [owner, repo].join('/');
         if (repoName) {
@@ -158,8 +160,12 @@ export const initMkDocs = createScaffoldTask<InitMkDocsOptions, MkDocsYml>(
 export async function initPython({
   pythonPath = NAME_PYTHON,
   dryRun = false,
+  upgrade = false,
 }: InitPythonOptions = {}): Promise<void> {
   const args = ['-m', 'pip', 'install', '-r', REQUIREMENTS_TXT_PATH];
+  if (upgrade) {
+    args.push('--upgrade');
+  }
   if (dryRun) {
     dryRunLog.info('Would execute command: %s %s', pythonPath, args.join(' '));
   } else {
@@ -214,6 +220,7 @@ export async function init({
   dryRun,
   cwd,
   pythonPath,
+  upgrade,
   typedocJson: typeDocJsonPath,
 }: InitOptions = {}): Promise<void> {
   if (!typescript && typedoc) {
@@ -222,7 +229,7 @@ export async function init({
     );
   }
 
-  if (typescript) {
+  if (typescript && !upgrade) {
     await initTsConfigJson({
       dest: tsconfigJsonPath,
       packageJson: packageJsonPath,
@@ -233,7 +240,7 @@ export async function init({
     });
   }
 
-  if (typedoc) {
+  if (typedoc && !upgrade) {
     await initTypeDocJson({
       dest: typeDocJsonPath,
       packageJson: packageJsonPath,
@@ -244,10 +251,10 @@ export async function init({
   }
 
   if (python) {
-    await initPython({pythonPath, dryRun});
+    await initPython({pythonPath, dryRun, upgrade});
   }
 
-  if (mkdocs) {
+  if (mkdocs && !upgrade) {
     await initMkDocs({
       dest: mkdocsYmlPath,
       cwd,
@@ -262,7 +269,7 @@ export async function init({
   }
 }
 
-export interface InitTypeDocOptions extends ScaffoldTaskOptions {}
+export type InitTypeDocOptions = ScaffoldTaskOptions;
 export interface InitTsConfigOptions extends ScaffoldTaskOptions {
   /**
    * List of source files (globs supported); typically `src` or `lib`
@@ -274,6 +281,11 @@ export interface InitPythonOptions extends ScaffoldTaskOptions {
    * Path to `python` (v3.x) executable
    */
   pythonPath?: string;
+
+  /**
+   * If true, upgrade only
+   */
+  upgrade?: boolean;
 }
 
 /**
@@ -315,5 +327,10 @@ export type InitOptions = Simplify<
      * Path to new or existing `mkdocs.yml` file
      */
     mkdocsYml?: string;
+
+    /**
+     * If `true`, upgrade only
+     */
+    upgrade?: boolean;
   }
 >;
